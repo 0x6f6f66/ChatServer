@@ -29,11 +29,12 @@ def write():
 
 
 if __name__ == '__main__':
-    host = '0.0.0.0'
+    host = "141.0.155.230"
     port = 10004
     server = (host, port)
 
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print(f"Connecting to: {host}:{port}")
     client.connect(server)
 
     nickname = input("choose a nickname: ")

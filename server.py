@@ -1,5 +1,6 @@
 import socket
 import threading
+import json
 
 
 def broadcast(message):
@@ -33,10 +34,11 @@ def receive(client: socket.socket, address: (str, int)):
         'client': client
     }
 
+    nicknames.append((address, clients[address]['nickname']))
+
     try:
         clients[address]['client'].send('NICK'.encode('ascii'))
-        nickname = (clients[address]['client'].recv(1024)).decode('ascii')
-        clients[address]['nickname'] = nickname
+        clients[address]['nickname'] = (clients[address]['client'].recv(1024)).decode('ascii')
     except BrokenPipeError:
         clients[address]['client'].send(f'An error has occurred!'.encode('ascii'))
         clients[address]['client'].close()
@@ -50,7 +52,7 @@ def receive(client: socket.socket, address: (str, int)):
     clients[address]['client'].send("You have successfully connected to the server.".encode('ascii'))
     broadcast(f"{clients[address]['nickname']} joined the server!")
 
-    handle(client)
+    handle(clients[address]['client'])
 
 
 def execute_commands():
@@ -62,12 +64,9 @@ def execute_commands():
         return help_instructions
 
     def get_online():
-        return clients
+        return json.dumps(clients, indent=3)
 
     def get_nicknames():
-        nicknames = []
-        for address in clients:
-            nicknames.append((address, clients[address]['nickname']))
         return nicknames
 
     def default():
@@ -98,6 +97,7 @@ if __name__ == '__main__':
     server.listen()
 
     clients = {}
+    nicknames = []
 
     execThread = threading.Thread(target=execute_commands)
     execThread.start()
